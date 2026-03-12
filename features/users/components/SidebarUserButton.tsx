@@ -1,6 +1,7 @@
 import { auth } from "@clerk/nextjs/server";
 import { Suspense } from "react";
 import SidebarUserButtonClient from "./SidebarUserButtonClient";
+import { getCurrentUser } from "@/services/clerk/lib/getCurrentUser";
 
 export const SidebarUserButton = () => {
   return (
@@ -11,10 +12,11 @@ export const SidebarUserButton = () => {
 };
 
 const SidebarUserSuspense = async () => {
-  const { userId } = await auth();
+  const { user } = await getCurrentUser({ allData: true });
+
   return (
     <SidebarUserButtonClient
-      user={{ email: "nyanphamdev@gmail.com", name: "NyanPham", imageUrl: "" }}
+      user={...user}
     />
   );
 };
