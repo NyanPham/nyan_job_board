@@ -1,14 +1,24 @@
+"use client";
+
+import { useUser } from "@clerk/nextjs";
 import { ReactNode } from "react";
-import { auth } from "@clerk/nextjs/server";
 
-export const SignedOut = async ({ children }: { children: ReactNode }) => {
-  const { userId } = await auth();
+export const SignedOut = ({ children }: { children: ReactNode }) => {
+  const { isSignedIn } = useUser();
 
-  return !userId ? <>{children}</> : null;
+  if (isSignedIn === false) {
+    return <>{children}</>;
+  }
+
+  return null;
 };
 
-export const SignedIn = async ({ children }: { children: ReactNode }) => {
-  const { userId } = await auth();
+export const SignedIn = ({ children }: { children: ReactNode }) => {
+  const { isSignedIn } = useUser();
 
-  return userId ? <>{children}</> : null;
+  if (isSignedIn) {
+    return <>{children}</>;
+  }
+
+  return null;
 };

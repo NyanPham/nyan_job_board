@@ -2,24 +2,25 @@ import {
   Sidebar,
   SidebarContent,
   SidebarFooter,
-  SidebarGroup,
   SidebarHeader,
   SidebarMenu,
-  SidebarMenuButton,
   SidebarMenuItem,
   SidebarProvider,
   SidebarTrigger,
 } from "@/components/ui/sidebar";
 import { AppSidebarClient } from "./_AppSidebarClient";
-import {
-  SignedOut,
-  SignedIn,
-} from "@/services/clerk/components/SignedInStatus";
-import Link from "next/link";
-import { LogInIcon } from "lucide-react";
-import { SidebarUserButton } from "@/features/users/components/SidebarUserButton";
+import { SignedIn } from "@/services/clerk/components/SignedInStatus";
+import { ReactNode } from "react";
 
-export default async function HomePage() {
+export default async function AppSidebar({
+  children,
+  content,
+  footerButton,
+}: {
+  children: ReactNode;
+  content: ReactNode;
+  footerButton: ReactNode;
+}) {
   return (
     <SidebarProvider className="overflow-y-hidden">
       <AppSidebarClient>
@@ -29,7 +30,8 @@ export default async function HomePage() {
             <span className="text-xl text-nowrap">Nyan Jobs</span>
           </SidebarHeader>
           <SidebarContent>
-            <SidebarGroup>
+            {content}
+            {/* <SidebarGroup>
               <SidebarMenu>
                 <SignedOut>
                   <SidebarMenuItem>
@@ -42,19 +44,20 @@ export default async function HomePage() {
                   </SidebarMenuItem>
                 </SignedOut>
               </SidebarMenu>
-            </SidebarGroup>
+            </SidebarGroup> */}
           </SidebarContent>
           <SignedIn>
             <SidebarFooter>
               <SidebarMenu>
                 <SidebarMenuItem>
-                  <SidebarUserButton />
+                  {footerButton}
+                  {/* <SidebarUserButton /> */}
                 </SidebarMenuItem>
               </SidebarMenu>
             </SidebarFooter>
           </SignedIn>
         </Sidebar>
-        <main className="flex-1">asdfdfasdf </main>
+        <main className="flex-1">{children}</main>
       </AppSidebarClient>
     </SidebarProvider>
   );
