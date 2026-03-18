@@ -25,6 +25,7 @@ import z from "zod";
 import { Input } from "@/components/ui/input";
 import {
   experienceLevels,
+  JobListingTable,
   jobListingTypes,
   locationRequirements,
   wageIntervals,
@@ -39,17 +40,33 @@ import StateSelectItems from "./StateSelectItems";
 import { MarkdownEditor } from "@/components/markdown/MarkdownEditor";
 import { Button } from "@/components/ui/button";
 import LoadingSwap from "@/components/LoadingSwap";
-import { createJobListing } from "../actions/actions";
+import { createJobListing, updateJobListing } from "../actions/actions";
 import { toast } from "sonner";
 import { useRouter } from "next/navigation";
 
 const NONE_SELECT_VALUE = "none";
 
-const JobListingForm = () => {
+const JobListingForm = ({
+  jobListing,
+}: {
+  jobListing?: Pick<
+    typeof JobListingTable.$inferSelect,
+    | "title"
+    | "description"
+    | "experienceLevel"
+    | "id"
+    | "city"
+    | "stateAbbreviation"
+    | "type"
+    | "wage"
+    | "wageInterval"
+    | "locationRequirement"
+  >;
+}) => {
   const router = useRouter();
   const form = useForm({
     resolver: zodResolver(jobListingSchema),
-    defaultValues: {
+    defaultValues: jobListing ?? {
       title: "",
       description: "",
       stateAbbreviation: null,
@@ -63,12 +80,15 @@ const JobListingForm = () => {
   });
 
   const onSubmit = async (data: z.infer<typeof jobListingSchema>) => {
-    const res = await createJobListing(data);
+    const action = jobListing
+      ? updateJobListing.bind(null, jobListing.id)
+      : createJobListing;
+    const res = await action(data);
+
     if (res.error) {
       toast.error(res.message);
     } else {
       toast.success("Job listing created successfully!");
-      router.push(`/employer/job-listings/${res.data.id}`);
     }
   };
 
@@ -316,7 +336,7 @@ const JobListingForm = () => {
           className="w-full"
         >
           <LoadingSwap isLoading={form.formState.isSubmitting}>
-            Create Job Listing
+            {jobListing ? "Update Job Listing" : "Create Job Listing"}
           </LoadingSwap>
         </Button>
       </form>
