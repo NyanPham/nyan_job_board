@@ -28,7 +28,7 @@ export const locationRequirementEnum = pgEnum(
 );
 
 export const experienceLevels = ["junior", "mid-level", "senior"] as const;
-export type experienceLevelEnum = (typeof experienceLevels)[number];
+export type ExperienceLevelEnum = (typeof experienceLevels)[number];
 export const experienceLevelEnum = pgEnum(
   "job_listing_experience_level",
   experienceLevels,
@@ -41,13 +41,13 @@ export const jobListingStatusEnum = pgEnum(
   jobListingStatuses,
 );
 
-export const JobListingTypes = [
+export const jobListingTypes = [
   "internship",
   "part-time",
   "full-time",
 ] as const;
-export type JobListingTypeEnum = (typeof JobListingTypes)[number];
-export const JobListingTypeEnum = pgEnum("job_listing_types", JobListingTypes);
+export type JobListingTypeEnum = (typeof jobListingTypes)[number];
+export const jobListingTypeEnum = pgEnum("job_listing_types", jobListingTypes);
 
 export const JobListingTable = pgTable(
   "job_listings",
@@ -66,7 +66,7 @@ export const JobListingTable = pgTable(
     locationRequirement: locationRequirementEnum().notNull(),
     experienceLevel: experienceLevelEnum().notNull(),
     status: jobListingStatusEnum().notNull().default("draft"),
-    type: JobListingTypeEnum().notNull(),
+    type: jobListingTypeEnum().notNull(),
     postedAt: timestamp({ withTimezone: true }),
     createdAt,
     updatedAt,
