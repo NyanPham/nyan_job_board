@@ -7,14 +7,13 @@ type CacheTag =
   | "jobListingApplications"
   | "organizationUserSettings";
 
-export function getGlobalTag(tag: CacheTag) {
-  return `global:${tag}` as const;
-}
+export const getGlobalTag = (tag: CacheTag) => `global:${tag}` as const;
 
-export function getOrganizationTag(tag: CacheTag, organizationId: string) {
-  return `organization:${organizationId}-${tag}` as const
-}
+export const getJobListingTag = (tag: CacheTag, jobListingId: string) =>
+  `jobListing:${jobListingId}-${tag}` as const;
 
-export function getIdTag(tag: CacheTag, id: string) {
-  return `id:${id}-${tag}` as const;
-}
+export const getOrganizationTag = (tag: CacheTag, organizationId: string) =>
+  `organization:${organizationId}-${tag}` as const;
+
+export const getIdTag = (tag: CacheTag, id: string) =>
+  `id:${id}-${tag}` as const;

@@ -108,3 +108,16 @@ export const formatJobListingLocation = ({
 
   return locationParts.join(", ");
 };
+
+export function formatJobListingStatus(status: JobListingStatusEnum) {
+  switch (status) {
+    case "published":
+      return "Active";
+    case "draft":
+      return "Draft";
+    case "delisted":
+      return "Delisted";
+    default:
+      throw new Error(`Unknown status: ${status satisfies never}`);
+  }
+}
