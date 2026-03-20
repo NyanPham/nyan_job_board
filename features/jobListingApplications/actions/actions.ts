@@ -29,8 +29,7 @@ export const createJobListingApplication = async (
     getPublicJobListing(jobListingId),
   ]);
 
-  if (jobListing == null) return permissionErr;
-  // if (userResume == null || jobListing == null) return permissionErr;
+  if (userResume == null || jobListing == null) return permissionErr;
 
   const { success, data } =
     newJobListingApplicationSchema.safeParse(unsafeData);

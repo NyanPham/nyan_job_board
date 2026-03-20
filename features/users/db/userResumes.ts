@@ -1,0 +1,21 @@
+import { db } from "@/drizzle/db";
+import { UserResumeTable } from "@/drizzle/schema";
+import { revalidateUserResumeCache } from "./cache/userResume";
+
+export const upsertUserResume = async (
+  userId: string,
+  data: Omit<typeof UserResumeTable.$inferInsert, "userId">,
+) => {
+  await db
+    .insert(UserResumeTable)
+    .values({
+      userId,
+      ...data,
+    })
+    .onConflictDoUpdate({
+      target: UserResumeTable.userId,
+      set: data,
+    });
+
+  revalidateUserResumeCache(userId);
+};
