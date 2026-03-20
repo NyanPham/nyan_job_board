@@ -1,6 +1,7 @@
 import { db } from "@/drizzle/db";
 import { UserResumeTable } from "@/drizzle/schema";
 import { revalidateUserResumeCache } from "./cache/userResume";
+import { eq } from "drizzle-orm";
 
 export const upsertUserResume = async (
   userId: string,
@@ -16,6 +17,18 @@ export const upsertUserResume = async (
       target: UserResumeTable.userId,
       set: data,
     });
+
+  revalidateUserResumeCache(userId);
+};
+
+export const updatetUserResume = async (
+  userId: string,
+  data: Partial<Omit<typeof UserResumeTable.$inferInsert, "userId">>,
+) => {
+  await db
+    .update(UserResumeTable)
+    .set(data)
+    .where(eq(UserResumeTable.userId, userId));
 
   revalidateUserResumeCache(userId);
 };
