@@ -37,10 +37,7 @@ const searchParamsSchema = z.object({
   city: z.string().optional().catch(undefined),
   state: z.string().optional().catch(undefined),
   experience: z.enum(experienceLevels).optional().catch(undefined),
-  locationRequirements: z
-    .enum(locationRequirements)
-    .optional()
-    .catch(undefined),
+  locationRequirement: z.enum(locationRequirements).optional().catch(undefined),
   type: z.enum(jobListingTypes).optional().catch(undefined),
   jobIds: z
     .union([z.string(), z.array(z.string())])
@@ -183,8 +180,8 @@ const getJobListings = async (
   searchParams: z.infer<typeof searchParamsSchema>,
   jobListingId: string | undefined,
 ) => {
-  "use cache"
-  cacheTag(getJobListingGlobalTag())
+  "use cache";
+  cacheTag(getJobListingGlobalTag());
 
   const whereConditions: (SQL | undefined)[] = [];
   if (searchParams.title) {
@@ -192,23 +189,31 @@ const getJobListings = async (
       ilike(JobListingTable.title, `%${searchParams.title}%`),
     );
   }
+
+  if (searchParams.locationRequirement) {
+    whereConditions.push(
+      eq(JobListingTable.locationRequirement, searchParams.locationRequirement),
+    );
+  }
+
   if (searchParams.city) {
     whereConditions.push(ilike(JobListingTable.city, `%${searchParams.city}%`));
   }
+
   if (searchParams.state) {
     whereConditions.push(
-      ilike(JobListingTable.stateAbbreviation, `%${searchParams.state}%`),
+      eq(JobListingTable.stateAbbreviation, searchParams.state),
     );
   }
 
   if (searchParams.experience) {
     whereConditions.push(
-      ilike(JobListingTable.experienceLevel, `%${searchParams.experience}%`),
+      eq(JobListingTable.experienceLevel, searchParams.experience),
     );
   }
 
   if (searchParams.type) {
-    whereConditions.push(ilike(JobListingTable.type, `%${searchParams.type}%`));
+    whereConditions.push(eq(JobListingTable.type, searchParams.type));
   }
 
   if (searchParams.jobIds) {
