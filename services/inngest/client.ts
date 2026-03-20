@@ -1,4 +1,8 @@
-import { DeletedObjectJSON, OrganizationJSON, UserJSON } from "@clerk/nextjs/types";
+import {
+  DeletedObjectJSON,
+  OrganizationJSON,
+  UserJSON,
+} from "@clerk/nextjs/types";
 import { EventSchemas, Inngest } from "inngest";
 
 type ClerkWebHookData<T> = {
@@ -17,6 +21,13 @@ type Events = {
   "clerk/organization.created": ClerkWebHookData<OrganizationJSON>;
   "clerk/organization.updated": ClerkWebHookData<OrganizationJSON>;
   "clerk/organization.deleted": ClerkWebHookData<DeletedObjectJSON>;
+
+  "app/jobListingApplication.created": {
+    data: {
+      jobListingId: string;
+      userId: string;
+    };
+  };
 };
 
 export const inngest = new Inngest({
