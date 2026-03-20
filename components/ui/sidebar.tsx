@@ -425,13 +425,14 @@ function SidebarGroupAction({
   )
 
   if (href) {
+    const linkProps = props as Omit<React.ComponentProps<typeof Link>, "href">;
     return (
       <Link
         href={href}
         data-slot="sidebar-group-action"
         data-sidebar="group-action"
         className={actionClasses}
-        {...(props as React.ComponentProps<typeof Link>)}
+        {...linkProps}
       />
     )
   }

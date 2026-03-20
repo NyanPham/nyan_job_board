@@ -77,7 +77,7 @@ export const JobListingTable = pgTable(
 export const jobListingReferences = relations(
   JobListingTable,
   ({ one, many }) => ({
-    organzation: one(OrganizationTable, {
+    organization: one(OrganizationTable, {
       fields: [JobListingTable.organizationId],
       references: [OrganizationTable.id],
     }),
