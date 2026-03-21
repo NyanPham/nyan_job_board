@@ -39,7 +39,6 @@ export const customFileRouter = {
         await uploadthing.deleteFiles(resumeFileKey);
       }
 
-      // TODO
       await inngest.send({
         name: "app/resume.uploaded",
         user: {

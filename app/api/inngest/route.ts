@@ -9,6 +9,7 @@ import {
   clerkUpdateUser,
 } from "@/services/inngest/functions/clerk";
 import { createdAIsummaryOfUploadedResume } from "@/services/inngest/functions/resume";
+import { rankApplication } from "@/services/inngest/functions/jobListingApplication";
 
 export const { GET, POST, PUT } = serve({
   client: inngest,
@@ -20,5 +21,6 @@ export const { GET, POST, PUT } = serve({
     clerkUpdateOrganization,
     clerkDeleteOrganization,
     createdAIsummaryOfUploadedResume,
+    rankApplication,
   ],
 });

@@ -68,7 +68,7 @@ const JobListingPage = ({
           breakpoint="min-width: 1024px"
           otherwise={
             <ClientSheet>
-              <SheetContent showCloseButton={false} className="p-4">
+              <SheetContent showCloseButton={false} className="p-4 overflow-y-auto">
                 <SheetHeader className="sr-only">
                   <SheetTitle>Job Listing Details</SheetTitle>
                 </SheetHeader>

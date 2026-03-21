@@ -5,6 +5,7 @@ import { UserResumeTable } from "@/drizzle/schema";
 import { env } from "@/data/env/server";
 import { updatetUserResume } from "@/features/users/db/userResumes";
 import { pdfToText } from "pdf-ts";
+import { cleanMarkdownResponse } from "@/lib/utils";
 
 export const createdAIsummaryOfUploadedResume = inngest.createFunction(
   {
@@ -39,7 +40,7 @@ export const createdAIsummaryOfUploadedResume = inngest.createFunction(
     const result = await step.ai.infer("create-ai-summary", {
       model: step.ai.models.gemini({
         model: "gemini-2.5-flash",
-        apiKey: env.GOOGLE_API_KEY,
+        apiKey: env.GEMINI_API_KEY,
       }),
       body: {
         contents: [
@@ -59,10 +60,7 @@ export const createdAIsummaryOfUploadedResume = inngest.createFunction(
       if (!result.candidates || result.candidates.length === 0) return;
       const part = result.candidates[0].content.parts[0];
       if ('text' in part) {
-        let summary = part.text.trim();
-        if (summary.startsWith('```markdown')) {
-          summary = summary.replace(/^```markdown\s*/, '').replace(/\s*```$/, '');
-        }
+        const summary = cleanMarkdownResponse(part.text.trim());
         if (summary) {
           await updatetUserResume(userId, { aiSummary: summary });
         }

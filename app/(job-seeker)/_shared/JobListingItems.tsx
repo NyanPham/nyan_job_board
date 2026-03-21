@@ -41,7 +41,7 @@ const searchParamsSchema = z.object({
   locationRequirement: z.enum(locationRequirements).optional().catch(undefined),
   type: z.enum(jobListingTypes).optional().catch(undefined),
   jobIds: z
-    .union([z.string(), z.array(z.string())])
+    .union([z.string().uuid(), z.array(z.string().uuid())])
     .transform((v) => (Array.isArray(v) ? v : [v]))
     .optional()
     .catch([]),
@@ -217,9 +217,10 @@ const getJobListings = async (
     whereConditions.push(eq(JobListingTable.type, searchParams.type));
   }
 
-  if (searchParams.jobIds) {
+  const validJobIds = (searchParams.jobIds ?? []).filter(Boolean);
+  if (validJobIds.length > 0) {
     whereConditions.push(
-      or(...searchParams.jobIds.map((jobId) => eq(JobListingTable.id, jobId))),
+      or(...validJobIds.map((jobId) => eq(JobListingTable.id, jobId))),
     );
   }
 
