@@ -37,7 +37,6 @@ const JobListingAISearchForm = () => {
         return;
     }
 
-    // TODO
     const params = new URLSearchParams()
     results.jobIds.forEach(id => params.append("jobIds", id))
     router.push(`/?${params.toString()}`)

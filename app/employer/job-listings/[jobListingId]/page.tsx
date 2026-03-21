@@ -2,7 +2,11 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
 import { db } from "@/drizzle/db";
-import { JobListingStatusEnum, JobListingTable } from "@/drizzle/schema";
+import {
+  JobListingApplicationTable,
+  JobListingStatusEnum,
+  JobListingTable,
+} from "@/drizzle/schema";
 import JobListingBadges from "@/features/jobListings/components/JobListingBadges";
 import { getJobListingIdTag } from "@/features/jobListings/db/cache/jobListings";
 import { formatJobListing } from "@/features/jobListings/lib/formatter";
@@ -40,6 +44,13 @@ import {
   toggleJobListingFeatured,
   toggleJobListingStatus,
 } from "@/features/jobListings/actions/actions";
+import { getJobListingApplicationJobListingTag } from "@/features/jobListingApplications/db/cache/jobListingApplications";
+import { getUserIdTag } from "@/features/users/db/cache/user";
+import { getUserResumeIdTag } from "@/features/users/db/cache/userResume";
+import ApplicationTable, {
+  SkeletonApplicationTable,
+} from "@/features/jobListingApplications/components/ApplicationTable";
+import { Separator } from "@/components/ui/separator";
 
 type Props = { params: Promise<{ jobListingId: string }> };
 
@@ -62,7 +73,7 @@ const SuspendedPage = async ({ params }: Props) => {
   if (jobListing == null) return notFound();
 
   return (
-    <div className="space-y-6 max-6xl max-auto p-4 @container">
+    <div className="space-y-6 max-6xl mx-auto p-4 @container">
       <div className="flex items-center justify-between gap-4 @max-4xl:flex-col @max-4xl:items-start">
         <div>
           <h1 className="text-2xl font-bold tracking-tight">
@@ -118,6 +129,15 @@ const SuspendedPage = async ({ params }: Props) => {
         }
         dialogTitle="Description"
       />
+
+      <Separator />
+
+      <div className="space-y-6">
+        <h2 className="text-xl font-semibold">Applications</h2>
+        <Suspense fallback={<SkeletonApplicationTable />}>
+          <Applications jobListingId={jobListingId} />
+        </Suspense>
+      </div>
     </div>
   );
 };
@@ -280,6 +300,78 @@ const featuredToggleButtonText = (isFeatured: boolean) => {
       Feature
     </>
   );
+};
+
+const Applications = async ({ jobListingId }: { jobListingId: string }) => {
+  const applications = await getJobListingApplications(jobListingId);
+
+  return (
+    <ApplicationTable
+      applications={applications.map((a) => ({
+        ...a,
+        user: {
+          ...a.user,
+          resume: a.user.resume
+            ? {
+                ...a.user.resume,
+                markdownSummary: a.user.resume.aiSummary ? (
+                  <MarkdownRenderer source={a.user.resume.aiSummary} />
+                ) : null,
+              }
+            : null,
+        },
+        coverLetterMarkdown: a.coverLetter ? (
+          <MarkdownRenderer source={a.coverLetter} />
+        ) : null,
+      }))}
+      canUpdateRating={await hasOrgUserPermission(
+        "org:job_listing_applications:change_rating",
+      )}
+      canUpdateStage={await hasOrgUserPermission(
+        "org:job_listing_applications:change_stage",
+      )}
+    />
+  );
+};
+
+const getJobListingApplications = async (jobListingId: string) => {
+  "use cache";
+  cacheTag(getJobListingApplicationJobListingTag(jobListingId));
+
+  const data = await db.query.JobListingApplicationTable.findMany({
+    where: eq(JobListingApplicationTable.jobListingId, jobListingId),
+    columns: {
+      coverLetter: true,
+      createdAt: true,
+      stage: true,
+      rating: true,
+      jobListingId: true,
+    },
+    with: {
+      user: {
+        columns: {
+          id: true,
+          name: true,
+          imageUrl: true,
+        },
+        with: {
+          resume: {
+            columns: {
+              resumeFileUrl: true,
+              aiSummary: true,
+            },
+          },
+        },
+      },
+    },
+  });
+
+  data.forEach(({ user }) => {
+    cacheTag(getUserIdTag(user.id));
+    cacheTag(getUserResumeIdTag(user.id));
+  });
+
+  return data;
 };
 
 export default JobListingPage;

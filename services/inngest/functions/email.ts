@@ -48,7 +48,7 @@ export const prepareDailyUserJobListingNotifications = inngest.createFunction(
         where: and(
           gte(
             JobListingTable.postedAt,
-            subDays(new Date(event.ts ?? Date.now()), 7),
+            subDays(new Date(event.ts ?? Date.now()), 1),
           ),
           eq(JobListingTable.status, "published"),
         ),
@@ -193,7 +193,7 @@ export const prepareDailyOrganizationUserApplicationNotifications =
           where: and(
             gte(
               JobListingApplicationTable.createdAt,
-              subDays(new Date(event.ts ?? Date.now()), 3),
+              subDays(new Date(event.ts ?? Date.now()), 1),
             ),
           ),
           columns: {
