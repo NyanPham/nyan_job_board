@@ -10,6 +10,10 @@ import {
   insertOrganization,
   updateOrganization,
 } from "@/features/organizations/db/organization";
+import {
+  deleteOrganizationUserSettings,
+  insertOrganizationUserSettings,
+} from "@/features/organizations/db/organizationUserSettings";
 
 function verifyWebhook({
   raw,
@@ -215,6 +219,68 @@ export const clerkDeleteOrganization = inngest.createFunction(
       }
 
       await deleteOrganization(id);
+    });
+  },
+);
+
+export const clerkCreateOrgMembership = inngest.createFunction(
+  {
+    id: "clerk/create-organization-user-settings",
+    name: "Clerk - Create Organization User Settings",
+  },
+  {
+    event: "clerk/organizationMembership.created",
+  },
+  async ({ event, step }) => {
+    await step.run("verify-webhook", async () => {
+      try {
+        verifyWebhook(event.data);
+      } catch {
+        throw new NonRetriableError("Invalid webhook");
+      }
+    });
+
+    await step.run("create-organization-user-settings", async () => {
+      const userId = event.data.data.public_user_data?.user_id;
+      const orgId = event.data.data.organization.id;
+
+      if (userId == null) return;
+
+      await insertOrganizationUserSettings({
+        userId,
+        organizationId: orgId,
+      });
+    });
+  },
+);
+
+export const clerkDeleteOrgMembership = inngest.createFunction(
+  {
+    id: "clerk/delete-organization-user-settings",
+    name: "Clerk - Delete Organization User Settings",
+  },
+  {
+    event: "clerk/organizationMembership.deleted",
+  },
+  async ({ event, step }) => {
+    await step.run("verify-webhook", async () => {
+      try {
+        verifyWebhook(event.data);
+      } catch {
+        throw new NonRetriableError("Invalid webhook");
+      }
+    });
+
+    await step.run("delete-organization-user-settings", async () => {
+      const userId = event.data.data.public_user_data?.user_id;
+      const orgId = event.data.data.organization.id;
+
+      if (userId == null) return;
+
+      await deleteOrganizationUserSettings({
+        userId,
+        organizationId: orgId,
+      });
     });
   },
 );

@@ -10,7 +10,7 @@ import { OrganizationTable } from "./organization";
 import { createdAt, updatedAt } from "../schemaHelpers";
 import { relations } from "drizzle-orm";
 
-export const OrganiazationUserSettingsTable = pgTable(
+export const OrganizationUserSettingsTable = pgTable(
   "organization_user_settings",
   {
     userId: varchar()
@@ -28,14 +28,14 @@ export const OrganiazationUserSettingsTable = pgTable(
 );
 
 export const organizationUserSettingsRelations = relations(
-  OrganiazationUserSettingsTable,
+  OrganizationUserSettingsTable,
   ({ one }) => ({
     user: one(UserTable, {
-      fields: [OrganiazationUserSettingsTable.userId],
+      fields: [OrganizationUserSettingsTable.userId],
       references: [UserTable.id],
     }),
     organization: one(OrganizationTable, {
-      fields: [OrganiazationUserSettingsTable.userId],
+      fields: [OrganizationUserSettingsTable.userId],
       references: [OrganizationTable.id],
     }),
   }),
