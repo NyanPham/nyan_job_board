@@ -25,7 +25,7 @@ const SidebarOrganizationSuspense = async () => {
         <SidebarMenuButton asChild>
           <span>
             <LogOutIcon />
-            <span>Log Out</span>
+            Log Out
           </span>
         </SidebarMenuButton>
       </SignOutButton>

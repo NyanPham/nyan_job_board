@@ -15,7 +15,7 @@ export const OrganizationUserSettingsTable = pgTable(
   {
     userId: varchar()
       .notNull()
-      .references(() => UserTable.id),
+      .references(() => UserTable.id, { onDelete: "cascade" }),
     organizationId: varchar()
       .notNull()
       .references(() => OrganizationTable.id),

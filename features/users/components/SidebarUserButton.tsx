@@ -20,18 +20,14 @@ const SidebarUserSuspense = async () => {
     return (
       <SignOutButton>
         <SidebarMenuButton asChild>
-          <span>
+          <span className="flex items-center gap-2">
             <LogOutIcon />
-            <span>Log Out</span>
+            Log Out
           </span>
         </SidebarMenuButton>
       </SignOutButton>
-    )
+    );
   }
 
-  return (
-    <SidebarUserButtonClient
-      user={user}
-    />
-  );
+  return <SidebarUserButtonClient user={user} />;
 };
