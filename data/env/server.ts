@@ -1,8 +1,5 @@
 import { createEnv } from "@t3-oss/env-nextjs";
 import { z } from "zod";
-import dns from "node:dns";
-dns.lookup("db.jwyqsrdjaiilpvpbvnlu.supabase.co", { all: true }, console.log);
-
 
 export const env = createEnv({
   server: {
@@ -18,6 +15,7 @@ export const env = createEnv({
     RESEND_API_KEY: z.string().min(1),
     SERVER_URL: z.string().min(1),
     DATABASE_URL: z.string().min(1),
+    NODE_ENV: z.enum(["development", "production"]),
   },
   createFinalSchema: (env) => {
     return z.object(env).transform((val) => {
@@ -30,13 +28,6 @@ export const env = createEnv({
         DATABASE_URL,
         ...rest
       } = val;
-
-      if (
-        `postgres://${DB_USER}:${DB_PASSWORD}@${DB_HOST}:${DB_PORT}/${DB_NAME}` !=
-        DATABASE_URL
-      ) {
-        throw new Error("NOT MATCH VARIABLES");
-      }
 
       return {
         ...rest,

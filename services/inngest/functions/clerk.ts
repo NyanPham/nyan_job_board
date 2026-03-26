@@ -35,15 +35,23 @@ export const clerkCreateUser = inngest.createFunction(
   },
   async ({ event, step }) => {
     await step.run("verify-webhook", async () => {
-      try {
-        verifyWebhook(event.data);
-      } catch {
-        throw new NonRetriableError("Invalid webhook");
+      if (env.NODE_ENV === "development") {
+        try {
+          verifyWebhook(event.data);
+        } catch {
+          throw new NonRetriableError("Invalid webhook");
+        }
       }
     });
 
     const userId = await step.run("create-user", async () => {
-      const userData = event.data.data;
+      const userData = event.data.data || event.data;
+
+      if (!userData || !userData.email_addresses) {
+        console.error("Invalid user data structure:", event.data);
+        throw new NonRetriableError("Invalid user data received");
+      }
+
       const email = userData.email_addresses.find(
         (email) => email.id === userData.primary_email_address_id,
       );
@@ -80,15 +88,23 @@ export const clerkUpdateUser = inngest.createFunction(
   },
   async ({ event, step }) => {
     await step.run("verify-webhook", async () => {
-      try {
-        verifyWebhook(event.data);
-      } catch {
-        throw new NonRetriableError("Invalid webhook");
+      if (env.NODE_ENV === "development") {
+        try {
+          verifyWebhook(event.data);
+        } catch {
+          throw new NonRetriableError("Invalid webhook");
+        }
       }
     });
 
     await step.run("update-user", async () => {
-      const userData = event.data.data;
+      const userData = event.data.data || event.data;
+
+      if (!userData || !userData.email_addresses) {
+        console.error("Invalid user data structure:", event.data);
+        throw new NonRetriableError("Invalid user data received");
+      }
+
       const email = userData.email_addresses.find(
         (email) => email.id === userData.primary_email_address_id,
       );
@@ -117,18 +133,22 @@ export const clerkDeleteUser = inngest.createFunction(
   },
   async ({ event, step }) => {
     await step.run("verify-webhook", async () => {
-      try {
-        verifyWebhook(event.data);
-      } catch {
-        throw new NonRetriableError("Invalid webhook");
+      if (env.NODE_ENV === "development") {
+        try {
+          verifyWebhook(event.data);
+        } catch {
+          throw new NonRetriableError("Invalid webhook");
+        }
       }
     });
 
     await step.run("delete-user", async () => {
-      const { id } = event.data.data;
+      const userData = event.data.data || event.data;
+      const { id } = userData;
 
-      if (id == null) {
-        throw new NonRetriableError("No id found!");
+      if (!userData || !id) {
+        console.error("Invalid delete user data structure:", event.data);
+        throw new NonRetriableError("Invalid delete user data received");
       }
 
       await deleteUser(id);
@@ -146,15 +166,22 @@ export const clerkCreateOrganization = inngest.createFunction(
   },
   async ({ event, step }) => {
     await step.run("verify-webhook", async () => {
-      try {
-        verifyWebhook(event.data);
-      } catch {
-        throw new NonRetriableError("Invalid webhook");
+      if (env.NODE_ENV === "development") {
+        try {
+          verifyWebhook(event.data);
+        } catch {
+          throw new NonRetriableError("Invalid webhook");
+        }
       }
     });
 
     await step.run("create-organization", async () => {
-      const orgData = event.data.data;
+      const orgData = event.data.data || event.data;
+
+      if (!orgData) {
+        console.error("Invalid org data structure:", event.data);
+        throw new NonRetriableError("Invalid org data received");
+      }
 
       await insertOrganization({
         id: orgData.id,
@@ -177,15 +204,22 @@ export const clerkUpdateOrganization = inngest.createFunction(
   },
   async ({ event, step }) => {
     await step.run("verify-webhook", async () => {
-      try {
-        verifyWebhook(event.data);
-      } catch {
-        throw new NonRetriableError("Invalid webhook");
+      if (env.NODE_ENV === "development") {
+        try {
+          verifyWebhook(event.data);
+        } catch {
+          throw new NonRetriableError("Invalid webhook");
+        }
       }
     });
 
     await step.run("update-organization", async () => {
-      const orgData = event.data.data;
+      const orgData = event.data.data || event.data;
+
+      if (!orgData) {
+        console.error("Invalid org data structure:", event.data);
+        throw new NonRetriableError("Invalid org data received");
+      }
 
       await updateOrganization(orgData.id, {
         name: orgData.name,
@@ -204,18 +238,22 @@ export const clerkDeleteOrganization = inngest.createFunction(
   { event: "clerk/organization.deleted" },
   async ({ event, step }) => {
     await step.run("verify-webhook", async () => {
-      try {
-        verifyWebhook(event.data);
-      } catch {
-        throw new NonRetriableError("Invalid webhook");
+      if (env.NODE_ENV === "development") {
+        try {
+          verifyWebhook(event.data);
+        } catch {
+          throw new NonRetriableError("Invalid webhook");
+        }
       }
     });
 
     await step.run("delete-organization", async () => {
-      const { id } = event.data.data;
+      const orgData = event.data.data || event.data;
+      const { id } = orgData;
 
-      if (id == null) {
-        throw new NonRetriableError("No id found!");
+      if (!orgData || !id) {
+        console.error("Invalid delete org data structure:", event.data);
+        throw new NonRetriableError("Invalid delete org data received");
       }
 
       await deleteOrganization(id);
@@ -233,18 +271,26 @@ export const clerkCreateOrgMembership = inngest.createFunction(
   },
   async ({ event, step }) => {
     await step.run("verify-webhook", async () => {
-      try {
-        verifyWebhook(event.data);
-      } catch {
-        throw new NonRetriableError("Invalid webhook");
+      if (env.NODE_ENV === "development") {
+        try {
+          verifyWebhook(event.data);
+        } catch {
+          throw new NonRetriableError("Invalid webhook");
+        }
       }
     });
 
     await step.run("create-organization-user-settings", async () => {
-      const userId = event.data.data.public_user_data?.user_id;
-      const orgId = event.data.data.organization.id;
+      const membershipData = event.data.data || event.data;
+      const userId = membershipData.public_user_data?.user_id;
+      const orgId = membershipData.organization?.id;
 
-      if (userId == null) return;
+      if (!membershipData) {
+        console.error("Invalid membership data structure:", event.data);
+        return;
+      }
+
+      if (userId == null || orgId == null) return;
 
       await insertOrganizationUserSettings({
         userId,
@@ -264,18 +310,26 @@ export const clerkDeleteOrgMembership = inngest.createFunction(
   },
   async ({ event, step }) => {
     await step.run("verify-webhook", async () => {
-      try {
-        verifyWebhook(event.data);
-      } catch {
-        throw new NonRetriableError("Invalid webhook");
+      if (env.NODE_ENV === "development") {
+        try {
+          verifyWebhook(event.data);
+        } catch {
+          throw new NonRetriableError("Invalid webhook");
+        }
       }
     });
 
     await step.run("delete-organization-user-settings", async () => {
-      const userId = event.data.data.public_user_data?.user_id;
-      const orgId = event.data.data.organization.id;
+      const membershipData = event.data.data || event.data;
+      const userId = membershipData.public_user_data?.user_id;
+      const orgId = membershipData.organization?.id;
 
-      if (userId == null) return;
+      if (!membershipData) {
+        console.error("Invalid delete membership data structure:", event.data);
+        return;
+      }
+
+      if (userId == null || orgId == null) return;
 
       await deleteOrganizationUserSettings({
         userId,
