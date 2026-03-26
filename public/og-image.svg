@@ -1,0 +1,5 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="630" viewBox="0 0 1200 630">
+  <rect width="1200" height="630" fill="#0f172a"/>
+  <text x="600" y="280" font-size="80" text-anchor="middle" fill="#fbbf24" font-family="Arial, Helvetica, sans-serif" font-weight="700">Nyan Job Board</text>
+  <text x="600" y="360" font-size="34" text-anchor="middle" fill="#e2e8f0">Next.js + Supabase + Clerk + Inngest + Drizzle</text>
+</svg>
