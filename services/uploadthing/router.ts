@@ -34,9 +34,13 @@ export const customFileRouter = {
         resumeFileUrl: file.ufsUrl,
         resumeFileKey: file.key,
       });
-      
+
       if (resumeFileKey != null) {
-        await uploadthing.deleteFiles(resumeFileKey);
+        try {
+          await uploadthing.deleteFiles(resumeFileKey);
+        } catch (err) {
+          console.error(`Failed to delete old resume file: ${err}`);
+        }
       }
 
       await inngest.send({

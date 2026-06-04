@@ -6,7 +6,7 @@ import { and, eq } from "drizzle-orm";
 export const insertJobListingApplication = async (
   application: typeof JobListingApplicationTable.$inferInsert,
 ) => {
-  await db
+  const [inserted] = await db
     .insert(JobListingApplicationTable)
     .values(application)
     .onConflictDoNothing({
@@ -14,9 +14,11 @@ export const insertJobListingApplication = async (
         JobListingApplicationTable.jobListingId,
         JobListingApplicationTable.userId,
       ],
-    });
+    })
+    .returning();
 
   revalidateJobListingApplicationCache(application);
+  return inserted;
 };
 
 export const updateJobListingApplication = async (

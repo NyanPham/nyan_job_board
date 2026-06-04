@@ -9,7 +9,7 @@ import {
 } from "@/drizzle/schema";
 import JobListingBadges from "@/features/jobListings/components/JobListingBadges";
 import { getJobListingIdTag } from "@/features/jobListings/db/cache/jobListings";
-import { formatJobListing } from "@/features/jobListings/lib/formatter";
+import { formatJobListingStatus } from "@/features/jobListings/lib/formatter";
 import { getCurrentOrganization } from "@/services/clerk/lib/getCurrentAuth";
 import { and, eq } from "drizzle-orm";
 import { cacheTag } from "next/cache";
@@ -80,7 +80,7 @@ const SuspendedPage = async ({ params }: Props) => {
             {jobListing.title}
           </h1>
           <div className="flex flex-wrap gap-2 mt-2">
-            <Badge>{formatJobListing(jobListing.status)}</Badge>
+            <Badge>{formatJobListingStatus(jobListing.status)}</Badge>
             <JobListingBadges jobListing={jobListing} />
           </div>
         </div>

@@ -1,6 +1,6 @@
 "use client";
 
-import { ComponentPropsWithRef, useTransition } from "react";
+import { ComponentPropsWithRef, useTransition, useState } from "react";
 import { Button } from "./ui/button";
 import { toast } from "sonner";
 import {
@@ -27,18 +27,23 @@ const ActionButton = ({
   areYouSureDescription?: string;
 }) => {
   const [isLoading, startTransition] = useTransition();
+  const [isOpen, setIsOpen] = useState(false);
 
-  const performAction = () => {
+  const performAction = (e?: React.MouseEvent) => {
+    if (e) e.preventDefault();
+
     startTransition(async () => {
       const data = await action();
       if (data.error) {
         toast.error(data.message ?? "Error");
+      } else {
+        setIsOpen(false);
       }
     });
   };
 
   if (requiredAreYouSure) {
-    return <AlertDialog open={isLoading ? true : undefined}>
+    return <AlertDialog open={isOpen} onOpenChange={setIsOpen}>
       <AlertDialogTrigger asChild>
         <Button {...props} />
       </AlertDialogTrigger>

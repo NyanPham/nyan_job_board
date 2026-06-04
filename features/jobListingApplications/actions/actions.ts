@@ -53,19 +53,21 @@ export const createJobListingApplication = async (
     };
   }
 
-  await insertJobListingApplication({
+  const insertedApplication = await insertJobListingApplication({
     jobListingId,
     userId,
     ...data,
   });
-
-  await inngest.send({
-    name: "app/jobListingApplication.created",
-    data: {
-      jobListingId,
-      userId,
-    },
-  });
+  
+  if (insertedApplication) {
+    await inngest.send({
+      name: "app/jobListingApplication.created",
+      data: {
+        jobListingId,
+        userId,
+      },
+    });
+  }
 
   return {
     error: false,
@@ -145,6 +147,19 @@ export const updateJobListingApplicationRating = async (
       message: "You don't have permission to update the rating",
     };
   }
+
+  await updateJobListingApplication(
+    {
+      jobListingId,
+      userId,
+    },
+    { rating: rating ?? null },
+  );
+
+  return {
+    error: false,
+    message: "Your rating was successfully submitted!",
+  }
 };
 
 export const updateJobListingApplicationStage = async (
@@ -197,6 +212,11 @@ export const updateJobListingApplicationStage = async (
     },
     { stage },
   );
+
+  return {
+    error: false,
+    message: "Your stage was successfully submitted!",
+  }
 };
 
 const getJobListing = async (id: string) => {

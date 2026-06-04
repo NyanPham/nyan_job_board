@@ -3,13 +3,13 @@ import { inngest } from "../client";
 import { eq } from "drizzle-orm";
 import { UserResumeTable } from "@/drizzle/schema";
 import { env } from "@/data/env/server";
-import { updatetUserResume } from "@/features/users/db/userResumes";
+import { updateUserResume } from "@/features/users/db/userResumes";
 import { pdfToText } from "pdf-ts";
 import { cleanMarkdownResponse } from "@/lib/utils";
 
 export const createdAIsummaryOfUploadedResume = inngest.createFunction(
   {
-    id: "create-ai-summary-of-uplodated-resume",
+    id: "create-ai-summary-of-uploaded-resume",
     name: "Create AI Summary Of Uploaded Resume",
   },
   {
@@ -62,7 +62,7 @@ export const createdAIsummaryOfUploadedResume = inngest.createFunction(
       if ('text' in part) {
         const summary = cleanMarkdownResponse(part.text.trim());
         if (summary) {
-          await updatetUserResume(userId, { aiSummary: summary });
+          await updateUserResume(userId, { aiSummary: summary });
         }
       }
     });

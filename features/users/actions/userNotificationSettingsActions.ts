@@ -29,6 +29,6 @@ export const updateUserNotificationSettings = async (
 
   return {
     error: false,
-    message: "Successufully updated your notification settings!",
+    message: "Successfully updated your notification settings!",
   };
 };

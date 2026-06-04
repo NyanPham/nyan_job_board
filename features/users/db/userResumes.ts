@@ -21,7 +21,7 @@ export const upsertUserResume = async (
   revalidateUserResumeCache(userId);
 };
 
-export const updatetUserResume = async (
+export const updateUserResume = async (
   userId: string,
   data: Partial<Omit<typeof UserResumeTable.$inferInsert, "userId">>,
 ) => {

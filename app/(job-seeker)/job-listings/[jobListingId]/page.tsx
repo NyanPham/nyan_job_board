@@ -179,7 +179,7 @@ const ApplyButton = async ({ jobListingId }: { jobListingId: string }) => {
           <Button>Apply</Button>
         </PopoverTrigger>
         <PopoverContent className="flex flex-col gap-2">
-          You neecd to create an account before applying for a job.
+          You need to create an account before applying for a job.
           <SignUpButton />
         </PopoverContent>
       </Popover>
@@ -213,7 +213,7 @@ const ApplyButton = async ({ jobListingId }: { jobListingId: string }) => {
             <Button>Apply</Button>
           </PopoverTrigger>
           <PopoverContent className="flex flex-col gap-2">
-            You neecd to upload your resume before applying for a job.
+            You need to upload your resume before applying for a job.
             <Button asChild>
               <Link href="/user-settings/resume">Upload Resume</Link>
             </Button>
