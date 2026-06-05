@@ -16,7 +16,7 @@ import {
 } from "@/drizzle/schema";
 import { convertSearchParamsToString } from "@/lib/convertSearchParamsToString";
 import { cn } from "@/lib/utils";
-import { and, desc, eq, ilike, or, SQL } from "drizzle-orm";
+import { and, count, desc, eq, ilike, or, SQL } from "drizzle-orm";
 import Link from "next/link";
 import { Suspense } from "react";
 import { differenceInDays } from "date-fns";
@@ -27,6 +27,7 @@ import z from "zod";
 import { cacheTag } from "next/cache";
 import { getJobListingGlobalTag } from "@/features/jobListings/db/cache/jobListings";
 import { getOrganizationIdTag } from "@/features/organizations/db/cache/organization";
+import { Pagination } from "@/components/Pagination";
 
 type Props = {
   searchParams: Promise<Record<string, string | string[]>>;
@@ -45,6 +46,7 @@ const searchParamsSchema = z.object({
     .transform((v) => (Array.isArray(v) ? v : [v]))
     .optional()
     .catch([]),
+  page: z.coerce.number().min(1).optional().default(1),
 });
 
 const JobListingItems = (props: Props) => {
@@ -57,10 +59,16 @@ const JobListingItems = (props: Props) => {
 
 const SuspendedComponent = async ({ searchParams, params }: Props) => {
   const jobListingId = params ? (await params).jobListingId : undefined;
-  const { success, data } = searchParamsSchema.safeParse(await searchParams);
-  const search = success ? data : {};
+  const rawParams = await searchParams;
+  const { success, data } = searchParamsSchema.safeParse(rawParams);
+  const search = success ? data : { page: 1 };
+  const LIMIT = 10;
 
-  const jobListings = await getJobListings(search, jobListingId);
+  const {
+    data: jobListings,
+    totalPages,
+    currentPage,
+  } = await getJobListings(search, jobListingId, LIMIT);
   if (jobListings.length === 0) {
     return (
       <div className="text-muted-foreground p-4">No job listings found</div>
@@ -69,18 +77,28 @@ const SuspendedComponent = async ({ searchParams, params }: Props) => {
 
   return (
     <div className="space-y-4">
-      {jobListings.map((jobListing) => (
-        <Link
-          className="block"
-          key={jobListing.id}
-          href={`/job-listings/${jobListing.id}?${convertSearchParamsToString(search)}`}
-        >
-          <JobListingListItem
-            jobListing={jobListing}
-            organization={jobListing.organization}
-          />
-        </Link>
-      ))}
+      {jobListings.map((jobListing) => {
+        const isActive = jobListing.id === jobListingId;
+
+        return (
+          <Link
+            className={cn(
+              "block rounded-lg transition-all duration-200",
+              isActive
+                ? "ring-2 ring-primary shadow-md bg-accent/10" // Đang chọn: viền sáng, nổi bóng, nền hơi đậm
+                : "hover:ring-1 hover:ring-primary/50 opacity-90 hover:opacity-100", // Bình thường: hover xịn xò
+            )}
+            key={jobListing.id}
+            href={`/job-listings/${jobListing.id}?${convertSearchParamsToString(rawParams)}`}
+          >
+            <JobListingListItem
+              jobListing={jobListing}
+              organization={jobListing.organization}
+            />
+          </Link>
+        );
+      })}
+      <Pagination totalPages={totalPages} currentPage={currentPage} />
     </div>
   );
 };
@@ -180,6 +198,7 @@ const DaysSincePosting = async ({ postedAt }: { postedAt: Date }) => {
 const getJobListings = async (
   searchParams: z.infer<typeof searchParamsSchema>,
   jobListingId: string | undefined,
+  limit: number = 10,
 ) => {
   "use cache";
   cacheTag(getJobListingGlobalTag());
@@ -224,16 +243,25 @@ const getJobListings = async (
     );
   }
 
+  const whereClause = or(
+    jobListingId
+      ? and(
+          eq(JobListingTable.status, "published"),
+          eq(JobListingTable.id, jobListingId),
+        )
+      : undefined,
+    and(eq(JobListingTable.status, "published"), ...whereConditions),
+  );
+
+  const [{ total }] = await db
+    .select({ total: count() })
+    .from(JobListingTable)
+    .where(whereClause);
+
+  const offset = ((searchParams.page ?? 1) - 1) * limit;
+
   const data = await db.query.JobListingTable.findMany({
-    where: or(
-      jobListingId
-        ? and(
-            eq(JobListingTable.status, "published"),
-            eq(JobListingTable.id, jobListingId),
-          )
-        : undefined,
-      and(eq(JobListingTable.status, "published"), ...whereConditions),
-    ),
+    where: whereClause,
     with: {
       organization: {
         columns: {
@@ -244,13 +272,19 @@ const getJobListings = async (
       },
     },
     orderBy: [desc(JobListingTable.isFeatured), desc(JobListingTable.postedAt)],
+    limit: limit,
+    offset: offset,
   });
 
   data.forEach((listing) => {
     cacheTag(getOrganizationIdTag(listing.organization.id));
   });
 
-  return data;
+  return {
+    data,
+    totalPages: Math.ceil(total / limit),
+    currentPage: searchParams.page ?? 1,
+  };
 };
 
 export default JobListingItems;
